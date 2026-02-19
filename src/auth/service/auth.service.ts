@@ -4,12 +4,12 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from '../user/service/user.service';
+import { UserService } from '../../user/service/user.service';
 import { User } from 'generated/prisma/client';
 import { verifyPassword } from 'src/common/utils/crypto.util';
 import { JwtService } from '@nestjs/jwt';
-import { JWTDto } from 'src/common/dto/JWT.dto';
-import { LocalAuthGuard } from './guard/local.auth.guard';
+import { JWTDto } from 'src/auth/dto/JWT.dto';
+import { LocalAuthGuard } from '../guard/local.auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 

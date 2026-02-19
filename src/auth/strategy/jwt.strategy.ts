@@ -18,11 +18,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<JwtPayload> {
+  async validate(payload: JwtPayload): Promise<string> {
     const cache = await this.cacheManager.get(payload.username);
     if (!cache) {
       throw new UnauthorizedException('Invalid token');
     }
-    return payload;
+    return payload.username;
   }
 }

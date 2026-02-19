@@ -1,7 +1,9 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsEmail,
+  IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsUUID,
   Max,
@@ -13,7 +15,7 @@ import {
   CreateUserInput,
   ResponseUser,
   UpdateUserInput,
-} from '../types/user.type';
+} from '../../common/types/user.type';
 
 export abstract class UserBaseDto {
   @IsString()
@@ -48,6 +50,11 @@ export class ResponseUserDto extends UserBaseDto implements ResponseUser {
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   id: string;
+
+  constructor(user: ResponseUser) {
+    super();
+    Object.assign(this, user);
+  }
 }
 
 export class CreateUserDto extends UserBaseDto implements CreateUserInput {
@@ -61,3 +68,32 @@ export class CreateUserDto extends UserBaseDto implements CreateUserInput {
 export class UpdateUserDto
   extends PartialType(CreateUserDto)
   implements UpdateUserInput {}
+
+export class UserNameSearchDto {
+  // мне лень было оптимизировать код, поэтому я оставил этот дто
+  @IsString()
+  @MinLength(1)
+  @IsOptional()
+  @ApiProperty({ description: 'Username', example: 'JohnDoe' })
+  username: string;
+
+  @IsNumber()
+  @Min(1)
+  @IsOptional()
+  @ApiProperty({ description: 'Page', example: 1 })
+  page: number;
+
+  @IsNumber()
+  @Min(1)
+  @IsOptional()
+  @ApiProperty({ description: 'Limit', example: 10 })
+  limit: number;
+}
+
+export class UpdateUserByUsernameDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  @ApiProperty({ description: 'What to update', example: 'description' })
+  description: string;
+}

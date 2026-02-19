@@ -5,10 +5,8 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
-  InternalServerErrorException,
   Post,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,14 +15,14 @@ import {
   ApiProperty,
   ApiResponse,
 } from '@nestjs/swagger';
-import { JWTDto } from 'src/common/dto/JWT.dto';
-import { CreateUserDto } from 'src/common/dto/user.dto';
-import { AuthService } from './auth.service';
+import { JWTDto } from 'src/auth/dto/JWT.dto';
+import { CreateUserDto } from 'src/user/dto/user.dto';
+import { AuthService } from '../service/auth.service';
 import { UserService } from 'src/user/service/user.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { JwtAuthGuard } from './guard/jwt.auth.guard';
-import { LocalAuthGuard } from './guard/local.auth.guard';
-import { LoginDto } from 'src/common/dto/auth.dto';
+import { JwtAuthGuard } from '../guard/jwt.auth.guard';
+import { LocalAuthGuard } from '../guard/local.auth.guard';
+import { LoginDto } from 'src/auth/dto/auth.dto';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
@@ -48,7 +46,7 @@ export class AuthController {
     status: HttpStatus.CREATED,
     description: 'User successfully registered',
     schema: {
-      example: JWTDto.prototype,
+      example: JWTDto,
     },
   })
   @ApiResponse({
@@ -124,11 +122,10 @@ export class AuthController {
       },
     },
   })
-  async logout(@Req() req: Request) {
-    await this.cacheManager.del(req.user.username);
-    return {
-      message: 'User successfully logged out',
-      status: HttpStatus.OK,
-    };
+  async logout(
+    @Req() req: { username: string },
+  ): Promise<{ message: string; status: number }> {
+    await this.cacheManager.del(req.username);
+    return { message: 'User successfully logged out', status: HttpStatus.OK };
   }
 }

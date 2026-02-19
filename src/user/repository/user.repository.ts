@@ -16,4 +16,31 @@ export class UserRepository {
       where: { username },
     });
   }
+
+  findAllUsers(
+    username?: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<User[]> {
+    return this.prisma.user.findMany({
+      where: username ? { username } : undefined,
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+  }
+
+  updateUserByUsername(username: string, updateUserDto: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { username },
+      data: {
+        description: updateUserDto,
+      },
+    });
+  }
+
+  async deleteUserByUsername(username: string): Promise<void> {
+    await this.prisma.user.delete({
+      where: { username },
+    });
+  }
 }
