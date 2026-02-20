@@ -13,10 +13,9 @@ async function bootstrap() {
     }),
   });
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
-    .setVersion('1.0')
-    .addTag('cats')
+    .setTitle('Wow CRUD API 67676767')
+    .setDescription('Это че домашка? ахуеть')
+    .setVersion('0.0.1')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
