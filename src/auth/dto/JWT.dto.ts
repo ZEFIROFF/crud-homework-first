@@ -16,8 +16,8 @@ export class JwtRefreshTokenDto {
 }
 
 export class JWTDto {
-  @ApiProperty({ type: JwtAccessTokenDto })
+  @ApiProperty({ description: 'Access token', example: 'access_token' })
   accessToken: JwtAccessTokenDto;
-  @ApiProperty({ type: JwtRefreshTokenDto })
+  @ApiProperty({ description: 'Refresh token', example: 'refresh_token' })
   refreshToken: JwtRefreshTokenDto;
 }

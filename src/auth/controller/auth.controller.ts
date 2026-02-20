@@ -9,12 +9,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiProperty,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JWTDto } from 'src/auth/dto/JWT.dto';
 import { CreateUserDto } from 'src/user/dto/user.dto';
 import { AuthService } from '../service/auth.service';
@@ -26,7 +21,7 @@ import { LoginDto } from 'src/auth/dto/auth.dto';
 import { LoggerService } from 'src/common/logger/logger.service';
 
 @Controller('auth')
-@UseGuards(JwtAuthGuard)
+@UseGuards(LocalAuthGuard)
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -43,22 +38,14 @@ export class AuthController {
     summary: 'Register new user',
     description: 'Create a new user account with username, email and password.',
   })
-  @ApiProperty({ type: CreateUserDto })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'User successfully registered',
-    schema: {
-      example: JWTDto,
-    },
+    type: JWTDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Bad request - Invalid credentials or username already exists',
-    schema: {
-      example: {
-        message: 'Username already in use',
-      },
-    },
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -84,29 +71,16 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User successfully logged in',
-    schema: {
-      example: JWTDto.prototype,
-    },
+    type: JWTDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Bad request - Invalid credentials',
-    schema: {
-      example: {
-        message: 'Invalid credentials',
-      },
-    },
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Unauthorized - Invalid credentials',
-    schema: {
-      example: {
-        message: 'Unauthorized',
-      },
-    },
   })
-  @ApiProperty({ type: LoginDto })
   async login(@Body() loginDto: LoginDto): Promise<JWTDto> {
     this.logger.verbose(
       `Logging in user ${loginDto.username}`,
@@ -126,20 +100,24 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User successfully logged out',
-    schema: {
-      example: {
-        message: 'User successfully logged out',
-      },
-    },
   })
-  async logout(
-    @Req() req: { username: string },
-  ): Promise<{ message: string; status: number }> {
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - Invalid credentials',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid credentials',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error, check logs',
+  })
+  async logout(@Req() req: Request & { username: string }): Promise<void> {
     this.logger.verbose(
       `Logging out user ${req.username}`,
       AuthController.name,
     );
     await this.cacheManager.del(req.username);
-    return { message: 'User successfully logged out', status: HttpStatus.OK };
   }
 }

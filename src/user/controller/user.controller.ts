@@ -3,24 +3,18 @@ import {
   HttpStatus,
   HttpCode,
   UseGuards,
-  Param,
   Req,
   Get,
   Patch,
-  Body,
   Delete,
   Query,
 } from '@nestjs/common';
-import {
-  ResponseUserDto,
-  UpdateUserByUsernameDto,
-  UserNameSearchDto,
-} from '../dto/user.dto';
+import { ResponseUserDto } from '../dto/user.dto';
 import { UserService } from '../service/user.service';
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiProperty,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.auth.guard';
@@ -41,26 +35,41 @@ export class UserController {
     summary: 'Get all users',
     description: 'Get all users with pagination and search by username',
   })
-  @ApiProperty({ type: UserNameSearchDto })
+  @ApiQuery({
+    name: 'username',
+    description: 'Search by username',
+    example: 'john',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Limit number',
+    example: 10,
+    required: false,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Users successfully fetched',
-    schema: {
-      example: [ResponseUserDto],
-    },
+    type: ResponseUserDto,
+    isArray: true,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Bad request - Invalid credentials or username already exists',
-    schema: {
-      example: {
-        message: 'Username already in use',
-      },
-    },
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Internal server error, check logs',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid credentials',
   })
   async getAllUsers(
     @Query('username') username?: string,
@@ -84,22 +93,24 @@ export class UserController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User successfully fetched',
-    schema: {
-      example: ResponseUserDto,
-    },
+    type: ResponseUserDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Bad request - Invalid credentials or username already exists',
     schema: {
       example: {
-        message: 'Username already in use',
+        message: 'Bad request - Invalid credentials or username already exists',
       },
     },
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,
     description: 'Internal server error, check logs',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid credentials',
   })
   async getUserByUsername(
     @Req() req: Request & { username: string },
@@ -114,7 +125,6 @@ export class UserController {
   @Patch('updateUser/my')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
-  @ApiProperty({ type: UpdateUserByUsernameDto })
   @ApiOperation({
     summary: 'Update user',
     description: 'Update user',
@@ -122,16 +132,37 @@ export class UserController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User successfully updated',
+    type: ResponseUserDto,
+  })
+  @ApiQuery({
+    name: 'description',
+    description: 'Description',
+    example: 'I am a software engineer',
+    required: true,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - Invalid credentials or username not found',
+    schema: {
+      example: {
+        message: 'Bad request - Invalid credentials or username not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error, check logs',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid credentials',
   })
   async updateUser(
     @Req() req: Request & { username: string },
-    @Body() updateUserDto: UpdateUserByUsernameDto,
+    @Query('description') description: string,
   ): Promise<ResponseUserDto> {
     this.logger.verbose(`Updating user ${req.username}`, UserController.name);
-    return this.userService.updateUserByUsername(
-      req.username,
-      updateUserDto.description,
-    );
+    return this.userService.updateUserByUsername(req.username, description);
   }
 
   @Delete('deleteUser/my')
@@ -145,11 +176,25 @@ export class UserController {
     status: HttpStatus.OK,
     description: 'User successfully deleted',
   })
-  async deleteUser(
-    @Req() req: Request & { username: string },
-  ): Promise<{ message: string; status: number }> {
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad request - Invalid credentials or username not found',
+    schema: {
+      example: {
+        message: 'Bad request - Invalid credentials or username not found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error, check logs',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized - Invalid credentials',
+  })
+  async deleteUser(@Req() req: Request & { username: string }): Promise<void> {
     this.logger.verbose(`Deleting user ${req.username}`, UserController.name);
     await this.userService.deleteUserByUsername(req.username);
-    return { message: 'User successfully deleted', status: HttpStatus.OK };
   }
 }
