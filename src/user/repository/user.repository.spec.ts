@@ -1,7 +1,20 @@
-import { Repository } from './user.repository';
+import { UserRepository } from './user.repository';
 
-describe('Repository', () => {
+const mockPrisma = {
+  user: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+  },
+};
+
+describe('UserRepository', () => {
+  let userRepository: UserRepository;
+  beforeEach(() => {
+    userRepository = new UserRepository(mockPrisma as never);
+  });
   it('should be defined', () => {
-    expect(new Repository()).toBeDefined();
+    expect(userRepository).toBeDefined();
   });
 });

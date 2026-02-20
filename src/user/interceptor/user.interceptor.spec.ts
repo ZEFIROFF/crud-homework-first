@@ -1,4 +1,4 @@
-import { UserInterceptor } from './interceptor/user.interceptor';
+import { UserInterceptor } from './user.interceptor';
 
 describe('UserInterceptor', () => {
   it('should be defined', () => {
