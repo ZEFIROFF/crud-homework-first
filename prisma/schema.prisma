@@ -16,6 +16,7 @@ model User {
   description String? @db.Char(1000)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime? @db.Timestamptz(6)
 
   @@index([email])
   @@index([username])

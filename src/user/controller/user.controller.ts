@@ -23,24 +23,18 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt.auth.guard';
-import { AuthService } from 'src/auth/service/auth.service';
+import { LoggerService } from 'src/common/logger/logger.service';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly authService: AuthService,
+    private readonly logger: LoggerService,
   ) {}
-
-  //getAllUsers (jwt auth guard, maybe login for search users)
-  //getUser (jwt auth guard)
-  //updateUser (jwt auth guard)
-  //deleteUser (jwt auth guard)
 
   @Get('getAllUsers')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get all users',
@@ -72,12 +66,15 @@ export class UserController {
     @Param('page') page: number = 1,
     @Param('limit') limit: number = 10,
   ): Promise<ResponseUserDto[]> {
+    this.logger.verbose(
+      `Getting all users with username ${username}`,
+      UserController.name,
+    );
     return this.userService.getAllUsers(username, page, limit);
   }
 
   @Get('getUser/my')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get user by id',
@@ -106,12 +103,15 @@ export class UserController {
   async getUserByUsername(
     @Req() req: Request & { username: string },
   ): Promise<ResponseUserDto> {
+    this.logger.verbose(
+      `Getting user by username ${req.username}`,
+      UserController.name,
+    );
     return this.userService.getUserByUsername(req.username);
   }
 
   @Patch('updateUser/my')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiProperty({ type: UpdateUserByUsernameDto })
   @ApiOperation({
@@ -126,6 +126,7 @@ export class UserController {
     @Req() req: Request & { username: string },
     @Body() updateUserDto: UpdateUserByUsernameDto,
   ): Promise<ResponseUserDto> {
+    this.logger.verbose(`Updating user ${req.username}`, UserController.name);
     return this.userService.updateUserByUsername(
       req.username,
       updateUserDto.description,
@@ -134,7 +135,6 @@ export class UserController {
 
   @Delete('deleteUser/my')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete user',
@@ -147,6 +147,7 @@ export class UserController {
   async deleteUser(
     @Req() req: Request & { username: string },
   ): Promise<{ message: string; status: number }> {
+    this.logger.verbose(`Deleting user ${req.username}`, UserController.name);
     await this.userService.deleteUserByUsername(req.username);
     return { message: 'User successfully deleted', status: HttpStatus.OK };
   }

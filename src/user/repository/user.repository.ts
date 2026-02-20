@@ -13,7 +13,7 @@ export class UserRepository {
 
   findOneUsername(username: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { username },
+      where: { username, deletedAt: null },
     });
   }
 
@@ -23,7 +23,7 @@ export class UserRepository {
     limit: number = 10,
   ): Promise<User[]> {
     return this.prisma.user.findMany({
-      where: username ? { username } : undefined,
+      where: username ? { username, deletedAt: null } : { deletedAt: null },
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -39,8 +39,9 @@ export class UserRepository {
   }
 
   async deleteUserByUsername(username: string): Promise<void> {
-    await this.prisma.user.delete({
-      where: { username },
+    await this.prisma.user.update({
+      where: { username, deletedAt: null },
+      data: { deletedAt: new Date() },
     });
   }
 }

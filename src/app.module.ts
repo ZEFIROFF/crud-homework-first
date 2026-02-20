@@ -7,16 +7,11 @@ import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from './common/logger/logger.module';
+import { v4 as uuidv4 } from 'uuid';
+import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 @Module({
   imports: [
-    CacheModule.register({
-      ttl: 5000,
-      isGlobal: true,
-    }),
-    ClsModule.forRoot({
-      global: true,
-      middleware: { mount: true }, //асинхроный контекст для всех запросов
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
       validate: (config) => {
@@ -33,6 +28,35 @@ import { CacheModule } from '@nestjs/cache-manager';
         return config;
       },
     }), // глобальный модуль для конфигурации
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): ThrottlerModuleOptions => ({
+        throttlers: [
+          {
+            ttl: configService.get<number>('THROTTLE_TTL') ?? 60000,
+            limit: configService.get<number>('THROTTLE_LIMIT') ?? 15,
+          },
+        ],
+      }),
+    }),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ttl: configService.get<number>('CACHE_TTL'),
+      }),
+      isGlobal: true,
+    }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: () => uuidv4(),
+      }, //асинхроный контекст для всех запросов
+    }),
+    LoggerModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -46,6 +70,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     DatabaseModule,
     UserModule,
     AuthModule,
+    LoggerModule,
   ],
 })
 export class AppModule {}

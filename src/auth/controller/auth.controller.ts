@@ -23,6 +23,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { JwtAuthGuard } from '../guard/jwt.auth.guard';
 import { LocalAuthGuard } from '../guard/local.auth.guard';
 import { LoginDto } from 'src/auth/dto/auth.dto';
+import { LoggerService } from 'src/common/logger/logger.service';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
@@ -31,6 +32,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly logger: LoggerService,
   ) {}
 
   @Post('register')
@@ -64,6 +66,10 @@ export class AuthController {
   })
   async register(@Body() createUserDto: CreateUserDto): Promise<JWTDto> {
     const user = await this.userService.register(createUserDto);
+    this.logger.verbose(
+      `User ${user.username} registered`,
+      AuthController.name,
+    );
     return this.authService.login(user.username, user.password);
   }
 
@@ -102,6 +108,10 @@ export class AuthController {
   })
   @ApiProperty({ type: LoginDto })
   async login(@Body() loginDto: LoginDto): Promise<JWTDto> {
+    this.logger.verbose(
+      `Logging in user ${loginDto.username}`,
+      AuthController.name,
+    );
     return this.authService.login(loginDto.username, loginDto.password);
   }
 
@@ -125,6 +135,10 @@ export class AuthController {
   async logout(
     @Req() req: { username: string },
   ): Promise<{ message: string; status: number }> {
+    this.logger.verbose(
+      `Logging out user ${req.username}`,
+      AuthController.name,
+    );
     await this.cacheManager.del(req.username);
     return { message: 'User successfully logged out', status: HttpStatus.OK };
   }
