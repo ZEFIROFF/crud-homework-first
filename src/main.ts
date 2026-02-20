@@ -2,7 +2,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ConsoleLogger } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { LoggerService } from './common/logger/logger.service';
 
 async function bootstrap() {
@@ -22,6 +22,13 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
   const logger = app.get(LoggerService);
   app.useLogger(logger);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

@@ -57,16 +57,6 @@ import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
       }, //асинхроный контекст для всех запросов
     }),
     LoggerModule,
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.get('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: true,
-      }), // асинхронный модуль для typeorm и постгры
-      inject: [ConfigService],
-    }),
     DatabaseModule,
     UserModule,
     AuthModule,
