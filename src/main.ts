@@ -16,9 +16,10 @@ async function bootstrap() {
     .setTitle('Wow CRUD API 67676767')
     .setDescription('Это че домашка? ахуеть')
     .setVersion('0.0.1')
+    .addBearerAuth()
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
   const logger = app.get(LoggerService);
   app.useLogger(logger);
   await app.listen(process.env.PORT ?? 3000);

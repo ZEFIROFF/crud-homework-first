@@ -17,7 +17,7 @@ import {
   UpdateUserInput,
 } from '../../common/types/user.type';
 
-export abstract class UserBaseDto {
+export class UserBaseDto {
   @IsString()
   @MinLength(1)
   @ApiProperty({ description: 'Username', example: 'JohnDoe' })

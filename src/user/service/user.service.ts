@@ -69,12 +69,12 @@ export class UserService {
   }
 
   async getAllUsers(
+    page: number,
+    limit: number,
     username?: string,
-    page: number = 1,
-    limit: number = 10,
   ): Promise<ResponseUserDto[]> {
     this.logger.debug(`Getting all users`, UserService.name);
-    const users = await this.userRepository.findAllUsers(username, page, limit);
+    const users = await this.userRepository.findAllUsers(page, limit, username);
     this.logger.debug(`Found ${users.length} users`, UserService.name);
 
     return users.map(

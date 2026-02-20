@@ -18,9 +18,9 @@ export class UserRepository {
   }
 
   findAllUsers(
+    page: number,
+    limit: number,
     username?: string,
-    page: number = 1,
-    limit: number = 10,
   ): Promise<User[]> {
     return this.prisma.user.findMany({
       where: username ? { username, deletedAt: null } : { deletedAt: null },

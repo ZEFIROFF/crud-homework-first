@@ -9,6 +9,7 @@ import {
   Patch,
   Body,
   Delete,
+  Query,
 } from '@nestjs/common';
 import {
   ResponseUserDto,
@@ -62,15 +63,15 @@ export class UserController {
     description: 'Internal server error, check logs',
   })
   async getAllUsers(
-    @Param('username') username?: string,
-    @Param('page') page: number = 1,
-    @Param('limit') limit: number = 10,
+    @Query('username') username?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ): Promise<ResponseUserDto[]> {
     this.logger.verbose(
       `Getting all users with username ${username}`,
       UserController.name,
     );
-    return this.userService.getAllUsers(username, page, limit);
+    return this.userService.getAllUsers(page ?? 1, limit ?? 10, username);
   }
 
   @Get('getUser/my')
